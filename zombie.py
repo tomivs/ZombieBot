@@ -11,7 +11,7 @@ import time
 
 # global contstants!
 # token from config.py
-from config import *
+from config import token
 strings = ['Aaarghhh!!!', 'Braaiiinnzzz..', 'Grmbblrr..', 'GRRRRRR...!!', 'Bluuughhrr..']
 url = 'https://api.telegram.org/bot' + token + '/'
 filename = 'offset.txt'  # updateID offset to prevent multiple responses
@@ -38,7 +38,7 @@ def doBotStuff(updateId):
 
     file = open(logfilename, 'a')
     
-    if (data['ok'] == True):
+    if data['ok'] == True:
         for update in data['result']:
             
             # take new update id
@@ -46,11 +46,20 @@ def doBotStuff(updateId):
             message = update['message']
             
             # respond if this is a message containing text
-            if ('text' in message):
+            if 'text' in message:
+                messagetext = str(message['text'])
+
+                # skip any commands except "/start" because we don't do commands in zombieland
+                if messagetext.startswith('/') and not messagetext.startswith('/start'):
+                    continue
+
+                # write a little in the log file
                 file.write(format(updateId) + ': user ' + format(message['from']['id']))
                 if ('username' in message['from']):
                     file.write(' (@' + message['from']['username'] + ')')
                 file.write(' at ' + datetime.datetime.fromtimestamp(int(message['date'])).strftime('%Y-%m-%d %H:%M:%S') + '\n')
+
+                # compose and send a reply (in zombie language)
                 chatId = message['chat']['id']
                 text = random.choice(strings)
                 sendSimpleMessage(chatId, text)
@@ -75,15 +84,15 @@ while True:
     # process updates
     newUpdateId = doBotStuff(updateId)
 
-    # write the update ID to a file and sleep 5 second if we processed updates
+    # write the update ID to a file and sleep 3 seconds if we processed updates
     if (newUpdateId != updateId):
         file = open(filename, 'wt')
         file.write(str(newUpdateId))
         file.close()
-        time.sleep(5)
+        time.sleep(3)
     else:
-        # otherwise, just sleep 10 seconds
-        time.sleep(10)
+        # otherwise, sleep 1 second; we can wait some more during long polling if we have to.
+        time.sleep(1)
 
     # use new update ID
     updateId = newUpdateId
