@@ -4,16 +4,14 @@ import codecs
 import json
 import random
 import time
+import datetime
 
 # Do not use this as an example, this is my first ever Python script
 # Tested with Python 3.4.3
 
 # global contstants!
-strings = ['Aaarghhh!!!', 'Braaiiinnzzz..', 'Grmbblrr..', 'GRRRRRR...!!', 'Bluuughhrr..']
-token = '>>>>>>>>>>>>>YOUR TOKEN HERE<<<<<<<<<<<<'
-url = 'https://api.telegram.org/bot' + token + '/'
-# file for storing the update ID offset
-filename = 'offset.txt'
+# (moved to config.py)
+from config import *
 
 # send message procedure
 def sendSimpleMessage(chatId, text):
@@ -32,6 +30,8 @@ def doBotStuff(updateId):
         data = json.load(reader(response))
     except:
         return updateId
+
+    file = open(logfilename, 'a')
     
     if (data['ok'] == True):
         for update in data['result']:
@@ -42,9 +42,13 @@ def doBotStuff(updateId):
             
             # respond if this is a message containing text
             if ('text' in message):
+                file.write(format(updateId) + ': @' + message['from']['username'] + ' at ')
+                file.write(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') + '\n')
                 chatId = message['chat']['id']
                 text = random.choice(strings)
                 sendSimpleMessage(chatId, text)
+
+    file.close()
                 
     return updateId
 
@@ -64,15 +68,15 @@ while True:
     # process updates
     newUpdateId = doBotStuff(updateId)
 
-    # write the update ID to a file and sleep 1 second if we processed updates
+    # write the update ID to a file and sleep 5 second if we processed updates
     if (newUpdateId != updateId):
         file = open(filename, 'wt')
         file.write(str(newUpdateId))
         file.close()
-        time.sleep(1)
-    else:
-        # otherwise, just sleep 5 seconds
         time.sleep(5)
+    else:
+        # otherwise, just sleep 10 seconds
+        time.sleep(10)
 
     # use new update ID
     updateId = newUpdateId
