@@ -43,7 +43,7 @@ def doBotStuff(updateId):
             # respond if this is a message containing text
             if ('text' in message):
                 file.write(format(updateId) + ': @' + message['from']['username'] + ' at ')
-                file.write(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') + '\n')
+                file.write(datetime.datetime.fromtimestamp(int(message['date'])).strftime('%Y-%m-%d %H:%M:%S') + '\n')
                 chatId = message['chat']['id']
                 text = random.choice(strings)
                 sendSimpleMessage(chatId, text)
