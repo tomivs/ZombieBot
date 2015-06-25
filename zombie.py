@@ -3,15 +3,20 @@ import urllib.parse
 import codecs
 import json
 import random
-import time
 import datetime
+import time
 
 # Do not use this as an example, this is my first ever Python script
 # Tested with Python 3.4.3
 
 # global contstants!
-# (moved to config.py)
+# token from config.py
 from config import *
+strings = ['Aaarghhh!!!', 'Braaiiinnzzz..', 'Grmbblrr..', 'GRRRRRR...!!', 'Bluuughhrr..']
+url = 'https://api.telegram.org/bot' + token + '/'
+filename = 'offset.txt'  # updateID offset to prevent multiple responses
+logfilename = 'log.txt'  # logfile
+
 
 # send message procedure
 def sendSimpleMessage(chatId, text):
@@ -42,8 +47,10 @@ def doBotStuff(updateId):
             
             # respond if this is a message containing text
             if ('text' in message):
-                file.write(format(updateId) + ': @' + message['from']['username'] + ' at ')
-                file.write(datetime.datetime.fromtimestamp(int(message['date'])).strftime('%Y-%m-%d %H:%M:%S') + '\n')
+                file.write(format(updateId) + ': user ' + format(message['from']['id']))
+                if ('username' in message['from']):
+                    file.write(' (@' + message['from']['username'] + ')')
+                file.write(' at ' + datetime.datetime.fromtimestamp(int(message['date'])).strftime('%Y-%m-%d %H:%M:%S') + '\n')
                 chatId = message['chat']['id']
                 text = random.choice(strings)
                 sendSimpleMessage(chatId, text)
